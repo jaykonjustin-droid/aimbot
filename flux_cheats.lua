@@ -1,35 +1,35 @@
--- Flux Cheats v1.7 - Aimbot + ESP + Chams + Tracers + Silent + Menu Tabs Rayo
+-- Flux Cheats v1.7 FINAL - Aimbot + ESP + Chams + Tracers + Silent + Menu Tabs Rayo
 -- Repo: https://github.com/jaykonjustin-droid/aimbot
 -- Loadstring: loadstring(game:HttpGet("https://raw.githubusercontent.com/jaykonjustin-droid/aimbot/main/flux_cheats.lua"))()
--- Créditos: Flux Dev | bnxyung7 (soporte Discord)
 
-local Players = game:GetService("Players")
-local RunService = game:GetService("RunService")
-local UserInput = game:GetService("UserInputService")
-local TweenService = game:GetService("TweenService")
-local Camera = workspace.CurrentCamera
-local LocalPlayer = Players.LocalPlayer
+local Players       = game:GetService("Players")
+local RunService    = game:GetService("RunService")
+local UserInput     = game:GetService("UserInputService")
+local TweenService  = game:GetService("TweenService")
+local Camera        = workspace.CurrentCamera
+local LocalPlayer   = Players.LocalPlayer
+local Mouse         = LocalPlayer:GetMouse()
 
--- Configuración
+-- ==================== CONFIG ====================
 local Settings = {
-    AimbotEnabled = false,
-    SilentEnabled = false,
-    ESPEnabled = false,
-    ChamsEnabled = false,
-    TracersEnabled = false,
-    SpeedEnabled = false,
-    FPSUnlock = false,
-    MouseLocked = false,
-    StreamProof = false,
-    ForceLook = false,
-    FOV = 220,
-    Smoothness = 0.75,
-    Prediction = 0.135,
-    WalkSpeed = 16,
-    AimPart = "Head",
-    TeamCheck = true,
-    FOVColor = Color3.fromRGB(255, 80, 80),
-    Language = "Español" -- Español, English, Hindi
+    AimbotEnabled   = false,
+    SilentEnabled   = false,
+    ESPEnabled      = false,
+    ChamsEnabled    = false,
+    TracersEnabled  = false,
+    SpeedEnabled    = false,
+    FPSUnlock       = false,
+    MouseLocked     = false,
+    StreamProof     = false,
+    ForceLook       = false,
+    FOV             = 220,
+    Smoothness      = 0.75,
+    Prediction      = 0.135,
+    WalkSpeed       = 16,
+    AimPart         = "Head",
+    TeamCheck       = true,
+    FOVColor        = Color3.fromRGB(255, 80, 80),
+    Language        = "Español"
 }
 
 -- FOV Circle
@@ -42,12 +42,12 @@ fovCircle.Radius = Settings.FOV
 fovCircle.Filled = false
 fovCircle.Visible = false
 
--- ESP Objects
+-- ESP Tables
 local ESP_Objects = {}
 local ChamsHighlights = {}
 local Tracers = {}
 
--- Crear ESP
+-- ==================== CREATE ESP ====================
 local function CreateESP(plr)
     if plr == LocalPlayer or ESP_Objects[plr] then return end
     local Box = Drawing.new("Square")
@@ -55,16 +55,19 @@ local function CreateESP(plr)
     Box.Filled = false
     Box.Transparency = 0.8
     Box.Color = Color3.fromRGB(255, 0, 0)
+
     local NameText = Drawing.new("Text")
     NameText.Size = 14
     NameText.Center = true
     NameText.Outline = true
     NameText.Color = Color3.fromRGB(255, 255, 255)
     NameText.Font = Drawing.Fonts.UI
+
     local HealthBar = Drawing.new("Line")
     HealthBar.Thickness = 3
     HealthBar.Color = Color3.fromRGB(0, 255, 0)
     HealthBar.Transparency = 0.7
+
     local SkeletonLines = {}
     for i = 1, 10 do
         local line = Drawing.new("Line")
@@ -73,10 +76,11 @@ local function CreateESP(plr)
         line.Transparency = 0.6
         table.insert(SkeletonLines, line)
     end
+
     ESP_Objects[plr] = {Box = Box, Name = NameText, Health = HealthBar, Skeleton = SkeletonLines}
 end
 
--- Update ESP (completo)
+-- ==================== UPDATE ESP ====================
 local function UpdateESP()
     if not Settings.ESPEnabled then
         for _, obj in pairs(ESP_Objects) do
@@ -159,7 +163,7 @@ local function UpdateESP()
     end
 end
 
--- Chams
+-- ==================== CHAMS ====================
 local function CreateChams(plr)
     if plr == LocalPlayer or ChamsHighlights[plr] then return end
     local highlight = Instance.new("Highlight")
@@ -172,7 +176,6 @@ local function CreateChams(plr)
     highlight.Parent = plr.Character
     highlight.Enabled = false
     ChamsHighlights[plr] = highlight
-    plr.CharacterAdded:Connect(function(char) highlight.Adornee = char end)
 end
 
 local function UpdateChams()
@@ -191,7 +194,7 @@ local function UpdateChams()
     end
 end
 
--- Tracers
+-- ==================== TRACERS ====================
 local function CreateTracer(plr)
     if Tracers[plr] then return end
     local line = Drawing.new("Line")
@@ -227,7 +230,7 @@ local function UpdateTracers()
     end
 end
 
--- Silent Aim
+-- ==================== SILENT AIM ====================
 local function SilentAim()
     if not Settings.SilentEnabled then return end
     local target = nil
@@ -253,19 +256,7 @@ local function SilentAim()
     end
 end
 
--- Inicializar
-for _, plr in ipairs(Players:GetPlayers()) do
-    CreateESP(plr)
-    CreateChams(plr)
-    CreateTracer(plr)
-end
-Players.PlayerAdded:Connect(function(plr)
-    CreateESP(plr)
-    CreateChams(plr)
-    CreateTracer(plr)
-end)
-
--- GUI principal con tabs
+-- ==================== GUI ====================
 local ScreenGui = Instance.new("ScreenGui")
 ScreenGui.Name = "FluxCheats"
 ScreenGui.ResetOnSpawn = false
@@ -284,18 +275,14 @@ glow.Color = Color3.fromRGB(0, 255, 180)
 glow.Thickness = 2
 glow.Transparency = 0.6
 
--- Animación menú
 local function OpenMenu()
     MainFrame.Position = UDim2.new(0.5, -170, 0.5, -230 + 80)
-    MainFrame.BackgroundTransparency = 1
     MainFrame.Visible = true
     TweenService:Create(MainFrame, TweenInfo.new(0.5, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {Position = UDim2.new(0.5, -170, 0.5, -230)}):Play()
-    TweenService:Create(MainFrame, TweenInfo.new(0.4), {BackgroundTransparency = 0}):Play()
 end
 
 local function CloseMenu()
     TweenService:Create(MainFrame, TweenInfo.new(0.4, Enum.EasingStyle.Back, Enum.EasingDirection.In), {Position = UDim2.new(0.5, -170, 0.5, -230 - 80)}):Play()
-    TweenService:Create(MainFrame, TweenInfo.new(0.3), {BackgroundTransparency = 1}):Play()
     task.delay(0.4, function() MainFrame.Visible = false end)
 end
 
@@ -309,13 +296,6 @@ Title.TextSize = 28
 Title.Parent = MainFrame
 
 -- Tabs
-local currentTab = "Aimbot"
-
-local function ShowTab(tabName)
-    currentTab = tabName
-    -- Puedes agregar lógica para mostrar/ocultar frames por tab aquí
-end
-
 local TabAimbot = Instance.new("TextButton")
 TabAimbot.Size = UDim2.new(0.25, 0, 0, 40)
 TabAimbot.Position = UDim2.new(0, 0, 0.12, 0)
@@ -327,32 +307,16 @@ TabAimbot.TextSize = 18
 TabAimbot.Parent = MainFrame
 Instance.new("UICorner", TabAimbot).CornerRadius = UDim.new(0, 10)
 
-TabAimbot.MouseButton1Click:Connect(function()
-    ShowTab("Aimbot")
-    TabAimbot.BackgroundColor3 = Color3.fromRGB(0, 180, 90)
-    TabESP.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
-    TabMisc.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
-    TabConfig.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
-end)
-
-local TabESP = Instance.new("TextButton")
-TabESP.Size = UDim2.new(0.25, 0, 0, 40)
-TabESP.Position = UDim2.new(0.25, 0, 0.12, 0)
-TabESP.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
-TabESP.Text = "Visual"
-TabESP.TextColor3 = Color3.new(1,1,1)
-TabESP.Font = Enum.Font.GothamBold
-TabESP.TextSize = 18
-TabESP.Parent = MainFrame
-Instance.new("UICorner", TabESP).CornerRadius = UDim.new(0, 10)
-
-TabESP.MouseButton1Click:Connect(function()
-    ShowTab("Visual")
-    TabAimbot.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
-    TabESP.BackgroundColor3 = Color3.fromRGB(0, 180, 90)
-    TabMisc.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
-    TabConfig.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
-end)
+local TabVisual = Instance.new("TextButton")
+TabVisual.Size = UDim2.new(0.25, 0, 0, 40)
+TabVisual.Position = UDim2.new(0.25, 0, 0.12, 0)
+TabVisual.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+TabVisual.Text = "Visual"
+TabVisual.TextColor3 = Color3.new(1,1,1)
+TabVisual.Font = Enum.Font.GothamBold
+TabVisual.TextSize = 18
+TabVisual.Parent = MainFrame
+Instance.new("UICorner", TabVisual).CornerRadius = UDim.new(0, 10)
 
 local TabMisc = Instance.new("TextButton")
 TabMisc.Size = UDim2.new(0.25, 0, 0, 40)
@@ -365,14 +329,6 @@ TabMisc.TextSize = 18
 TabMisc.Parent = MainFrame
 Instance.new("UICorner", TabMisc).CornerRadius = UDim.new(0, 10)
 
-TabMisc.MouseButton1Click:Connect(function()
-    ShowTab("Misc")
-    TabAimbot.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
-    TabESP.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
-    TabMisc.BackgroundColor3 = Color3.fromRGB(0, 180, 90)
-    TabConfig.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
-end)
-
 local TabConfig = Instance.new("TextButton")
 TabConfig.Size = UDim2.new(0.25, 0, 0, 40)
 TabConfig.Position = UDim2.new(0.75, 0, 0.12, 0)
@@ -384,15 +340,7 @@ TabConfig.TextSize = 18
 TabConfig.Parent = MainFrame
 Instance.new("UICorner", TabConfig).CornerRadius = UDim.new(0, 10)
 
-TabConfig.MouseButton1Click:Connect(function()
-    ShowTab("Config")
-    TabAimbot.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
-    TabESP.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
-    TabMisc.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
-    TabConfig.BackgroundColor3 = Color3.fromRGB(0, 180, 90)
-end)
-
--- Contenido básico (puedes expandir)
+-- Toggle Aimbot (ejemplo contenido)
 local ToggleAimbot = Instance.new("TextButton")
 ToggleAimbot.Size = UDim2.new(0.9, 0, 0, 45)
 ToggleAimbot.Position = UDim2.new(0.05, 0, 0.20, 0)
@@ -411,7 +359,7 @@ ToggleAimbot.MouseButton1Click:Connect(function()
     fovCircle.Visible = Settings.AimbotEnabled
 end)
 
--- (agrega aquí los demás toggles como ToggleESP, ToggleChams, ToggleSilent, etc.)
+-- (Aquí puedes agregar más toggles como ToggleESP, ToggleChams, ToggleSilent, etc. en las posiciones que quieras)
 
 -- Botón flotante logo Flux
 local FloatBtn = Instance.new("ImageButton")
@@ -445,11 +393,7 @@ discStroke.Transparency = 0.3
 
 DiscordBtn.MouseButton1Click:Connect(function()
     setclipboard("https://discord.gg/pG89JRy5pT")
-    game:GetService("StarterGui"):SetCore("SendNotification", {
-        Title = "Flux Cheats",
-        Text = "Discord copiado: https://discord.gg/pG89JRy5pT",
-        Duration = 5
-    })
+    game:GetService("StarterGui"):SetCore("SendNotification", {Title = "Flux Cheats", Text = "Discord copiado!", Duration = 5})
 end)
 
 -- Drag menú
@@ -488,12 +432,11 @@ UserInput.InputBegan:Connect(function(input, gp)
     end
 end)
 
--- Loops principales
+-- ==================== LOOPS ====================
 RunService.RenderStepped:Connect(function()
     local center = Vector2.new(Camera.ViewportSize.X / 2, Camera.ViewportSize.Y / 2)
     fovCircle.Position = center
     fovCircle.Radius = Settings.FOV
-    fovCircle.Color = Settings.FOVColor
     fovCircle.Visible = Settings.AimbotEnabled
 
     if Settings.AimbotEnabled then
@@ -524,8 +467,8 @@ RunService.RenderStepped:Connect(function()
 
     UpdateESP()
     UpdateChams()
-    SilentAim()
     UpdateTracers()
+    SilentAim()
 end)
 
-print("Flux Cheats v1.7 cargado! 🔥 Todo ordenado y funcional")
+print("Flux Cheats v1.7 FINAL cargado correctamente! 🔥 Menú abre con INSERT")
