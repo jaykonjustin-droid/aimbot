@@ -1,6 +1,6 @@
--- Flux Cheats v1.2 - Aimbot suave 60% + FOV Circle + Menú flotante + X/Y keys
+-- Flux Cheats v1.3 - Aimbot MÁS FUERTE (75% smooth + prediction) + FOV 220 + Menú con X/Y
 -- Repo: https://github.com/jaykonjustin-droid/aimbot
--- Loadstring recomendado:
+-- Loadstring:
 -- loadstring(game:HttpGet("https://raw.githubusercontent.com/jaykonjustin-droid/aimbot/main/flux_cheats.lua"))()
 
 local Players       = game:GetService("Players")
@@ -9,21 +9,22 @@ local UserInput     = game:GetService("UserInputService")
 local Camera        = workspace.CurrentCamera
 local LocalPlayer   = Players.LocalPlayer
 
--- Configuración
+-- Configuración (más agresivo)
 local Settings = {
     Enabled     = false,
-    FOV         = 150,
-    Smoothness  = 0.6,       -- 60%
-    AimPart     = "Head",
+    FOV         = 220,           -- Más grande para jalar desde lejos
+    Smoothness  = 0.75,          -- 75% → se pega más rápido
+    AimPart     = "Head",        -- Solo cabeza para precisión
     TeamCheck   = true,
+    Prediction  = 0.135,         -- Predicción básica (adelanta movimiento)
 }
 
--- FOV Circle (solo visible si aimbot ON)
+-- FOV Circle más visible
 local fovCircle = Drawing.new("Circle")
-fovCircle.Thickness    = 2
-fovCircle.Color        = Color3.fromRGB(255, 60, 60)
-fovCircle.Transparency = 0.6
-fovCircle.NumSides     = 80
+fovCircle.Thickness    = 2.5
+fovCircle.Color        = Color3.fromRGB(255, 80, 80)
+fovCircle.Transparency = 0.45
+fovCircle.NumSides     = 100
 fovCircle.Radius       = Settings.FOV
 fovCircle.Filled       = false
 fovCircle.Visible      = false
@@ -34,7 +35,7 @@ ScreenGui.Name = "FluxCheats"
 ScreenGui.ResetOnSpawn = false
 ScreenGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
 
--- Menú principal (empieza oculto)
+-- Menú principal (oculto al inicio)
 local MainFrame = Instance.new("Frame")
 MainFrame.Size             = UDim2.new(0, 260, 0, 180)
 MainFrame.Position         = UDim2.new(0.5, -130, 0.5, -90)
@@ -47,7 +48,7 @@ Instance.new("UICorner", MainFrame).CornerRadius = UDim.new(0, 12)
 local Title = Instance.new("TextLabel")
 Title.Size                 = UDim2.new(1, 0, 0, 40)
 Title.BackgroundTransparency = 1
-Title.Text                 = "Flux Cheats v1.2"
+Title.Text                 = "Flux Cheats v1.3"
 Title.TextColor3           = Color3.fromRGB(0, 255, 130)
 Title.Font                 = Enum.Font.GothamBlack
 Title.TextSize             = 22
@@ -75,13 +76,13 @@ local InfoLabel = Instance.new("TextLabel")
 InfoLabel.Size                 = UDim2.new(0.88, 0, 0, 25)
 InfoLabel.Position             = UDim2.new(0.06, 0, 0.58, 0)
 InfoLabel.BackgroundTransparency = 1
-InfoLabel.Text                 = "FOV: 150 | Smooth: 60% | TeamCheck: ON"
+InfoLabel.Text                 = "FOV: 220 | Smooth: 75% | Prediction ON"
 InfoLabel.TextColor3           = Color3.fromRGB(170, 170, 170)
 InfoLabel.Font                 = Enum.Font.Gotham
 InfoLabel.TextSize             = 14
 InfoLabel.Parent               = MainFrame
 
--- Botón flotante circular "F" (siempre visible al inicio)
+-- Botón flotante "F"
 local FloatBtn = Instance.new("TextButton")
 FloatBtn.Size             = UDim2.new(0, 55, 0, 55)
 FloatBtn.Position         = UDim2.new(1, -75, 1, -85)
@@ -101,7 +102,7 @@ FloatBtn.MouseButton1Click:Connect(function()
     MainFrame.Visible = not MainFrame.Visible
 end)
 
--- Drag menú principal
+-- Drag menú
 local dragging, dragStart, startPos
 MainFrame.InputBegan:Connect(function(input)
     if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
@@ -121,7 +122,7 @@ MainFrame.InputChanged:Connect(function(input)
     end
 end)
 
--- Teclas rápidas
+-- Teclas
 UserInput.InputBegan:Connect(function(input, gp)
     if gp then return end
     if input.KeyCode == Enum.KeyCode.X then
@@ -137,8 +138,8 @@ UserInput.InputBegan:Connect(function(input, gp)
     end
 end)
 
--- Aimbot principal
-RunService.RenderStepped:Connect(function()
+-- Aimbot más fuerte con prediction
+RunService.RenderStepped:Connect(function(delta)
     local center = Vector2.new(Camera.ViewportSize.X / 2, Camera.ViewportSize.Y / 2)
     fovCircle.Position = center
     fovCircle.Radius   = Settings.FOV
@@ -146,29 +147,33 @@ RunService.RenderStepped:Connect(function()
     if not Settings.Enabled then return end
 
     local closest, minDist = nil, math.huge
+    local cameraPos = Camera.CFrame.Position
 
     for _, plr in Players:GetPlayers() do
         if plr == LocalPlayer or not plr.Character then continue end
         if Settings.TeamCheck and plr.Team == LocalPlayer.Team then continue end
 
-        local part = plr.Character:FindFirstChild(Settings.AimPart) 
-                  or plr.Character:FindFirstChild("HumanoidRootPart")
-        if not part then continue end
+        local humanoid = plr.Character:FindFirstChild("Humanoid")
+        local part = plr.Character:FindFirstChild(Settings.AimPart)
+        if not part or not humanoid then continue end
 
-        local pos, visible = Camera:WorldToViewportPoint(part.Position)
-        if not visible then continue end
+        local velocity = part.Velocity or Vector3.new()
+        local predictedPos = part.Position + (velocity * Settings.Prediction)
 
-        local dist = (Vector2.new(pos.X, pos.Y) - center).Magnitude
+        local screenPos, onScreen = Camera:WorldToViewportPoint(predictedPos)
+        if not onScreen then continue end
+
+        local dist = (Vector2.new(screenPos.X, screenPos.Y) - center).Magnitude
         if dist < Settings.FOV and dist < minDist then
             minDist = dist
-            closest = part
+            closest = predictedPos
         end
     end
 
     if closest then
-        local target = CFrame.new(Camera.CFrame.Position, closest.Position)
-        Camera.CFrame = Camera.CFrame:Lerp(target, Settings.Smoothness)
+        local targetCFrame = CFrame.new(cameraPos, closest)
+        Camera.CFrame = Camera.CFrame:Lerp(targetCFrame, Settings.Smoothness)
     end
 end)
 
-print("Flux Cheats v1.2 cargado!   X = ocultar/mostrar todo   |   Y = toggle aimbot rápido   |   Toca círculo 'F' para menú")
+print("Flux Cheats v1.3 cargado! MÁS FUERTE 🔥 | X = ocultar todo | Y = toggle aimbot | Toca 'F' para menú")
